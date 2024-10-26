@@ -1,0 +1,125 @@
+Nama : Miqdam Ferdiansyah Hambali
+NIM : 0110222166
+
+
+6.1)
+a.)
+mysql> CREATE PROCEDURE pro_naik(
+    ->     IN jenis_produk INT,
+    ->     IN persentasi_kenaikan INT )
+    ->     BEGIN
+    ->     UPDATE produk SET harga_jual = harga_jual + (harga_jual * persentasi_
+kenaikan / 100)
+    ->     WHERE jenis_produk_id = jenis_produk;
+    ->     END $$
+Query OK, 0 rows affected (0.19 sec)
+
+
+b)
+mysql> CREATE FUNCTION umur(tgl_lahir DATE)
+    ->     RETURNS INT
+    ->     BEGIN
+    ->     DECLARE umur INT;
+    ->     SET umur = YEAR(CURDATE()) - YEAR(tgl_lahir);
+    ->     RETURN umur;
+    ->     END $$
+Query OK, 0 rows affected (0.11 sec)
+
+mysql> SELECT nama, umur(tgl_lahir) AS umur FROM pelanggan;
+    -> $$
++---------------+------+
+| nama          | umur |
++---------------+------+
+| Agung Sedayu  |   14 |
+| Pandan Wangi  |   74 |
+| Sekar Mirah   |   41 |
+| Swandaru Geni |   43 |
+| Pradabashu    |   39 |
+| Gayatri Dwi   |   37 |
+| Dewi Gyat     |   36 |
+| Andre Haru    |   34 |
+| Ahmad Hasan   |   32 |
+| Cassanndra    |   26 |
++---------------+------+
+10 rows in set (0.07 sec)
+
+
+c)
+mysql> create function kategori_harga(harga double)
+    -> returns varchar(20)
+    -> begin
+    ->     case
+    ->         when harga_jual >= 0 and harga < 500000 then return 'murah';
+    ->         when harga_jual >= 500000 and harga < 3000000 then return 'sedang';
+    ->         when harga_jual >= 3000000 and harga <= 10000000 then return 'mahal';
+    ->         when harga_jual > 10000000 then return 'sangat mahal';
+    ->     end case;
+    -> end $$
+Query OK, 0 rows affected (0.11 sec)
+
+mysql> delimiter ;
+mysql> select kategori_harga(250000);
++------------------------+
+| kategori_harga(250000) |
++------------------------+
+| murah                  |
++------------------------+
+1 row in set (0.00 sec)
+
+mysql> select kategori_harga(2500000);
++-------------------------+
+| kategori_harga(2500000) |
++-------------------------+
+| sedang                  |
++-------------------------+
+1 row in set (0.00 sec)
+
+mysql> select kategori_harga(5000000);
++-------------------------+
+| kategori_harga(5000000) |
++-------------------------+
+| mahal                   |
++-------------------------+
+1 row in set (0.00 sec)
+
+mysql> select kategori_harga(15000000);
++--------------------------+
+| kategori_harga(15000000) |
++--------------------------+
+| sangat mahal             |
++--------------------------+
+1 row in set (0.00 sec)
+
+
+6.2)
+mysql> start transaction;
+    -> insert into produk (nama, harga_jual, stok, jenis_produk_id)
+    -> values
+    -> ('TV A', 50000, 100, 1),
+    -> ('TV B', 75000, 80, 1),
+    -> ('TV C', 100000, 50, 1);
+    -> update produk set stok = 120 where kode = 'tk01';
+    -> savepoint update_stok;
+    -> delete from pembayaran where nokuitansi = 'm0016';
+    -> rollback to update_stok;
+    -> update kartu set iuran = 200000 where kode = 'dm';
+    -> commit;
+    -> end $$
+Query OK, 0 rows affected (0.05 sec)
+
+Query OK, 3 rows affected (0.06 sec)
+Records: 3  Duplicates: 0  Warnings: 0
+
+Query OK, 1 row affected (0.18 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+Query OK, 0 rows affected (0.18 sec)
+
+Query OK, 1 row affected (0.29 sec)
+
+Query OK, 0 rows affected (0.29 sec)
+
+Query OK, 1 row affected (0.29 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+Query OK, 0 rows affected (0.41 sec)
