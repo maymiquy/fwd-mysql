@@ -1,0 +1,75 @@
+Nama : Miqdam Ferdiansyah Hambali
+NIM : 0110222166
+
+
+7)
+1.)
+mysql> select * from pesanan;
++----+------------+---------+--------------+
+| id | tanggal    | total   | pelanggan_id |
++----+------------+---------+--------------+
+|  1 | 2015-11-04 | 9720000 |            1 |
+|  2 | 2015-11-04 |   17500 |            3 |
+|  3 | 2015-11-04 |       0 |            6 |
+|  4 | 2015-11-04 |       0 |            7 |
+|  5 | 2015-11-04 |       0 |           10 |
+|  6 | 2015-11-04 |   60000 |            2 |
+|  7 | 2015-11-04 |       0 |            5 |
+|  8 | 2015-11-04 |       0 |            4 |
+|  9 | 2015-11-04 |       0 |            8 |
+| 10 | 2015-11-04 |       0 |            9 |
+| 11 | 2021-05-31 | 1200000 |            3 |
+| 13 | 2023-08-06 |      40 |            1 |
+| 14 | 2023-01-01 |   20000 |            2 |
++----+------------+---------+--------------+
+13 rows in set (0.300 sec)
+
+mysql> alter table pembayaran add status_pembayaran varchar(25);
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> create trigger cek_pembayaran before insert on pembayaran
+    -> for each row
+    -> begin
+    -> declare total_bayar decimal(10,2);
+    -> declare total_pesanan decimal(10,2);
+    -> select sum(jumlah) into total_bayar from pembayaran where pesanan_id = NEW.pesanan_id;
+    -> select total into total_pesanan from pesanan where id = NEW.pesanan_id;
+    -> if total_bayar + NEW.jumlah >= total_pesanan then
+    -> set NEW.status_pembayaran = 'Lunas';
+    -> end if;
+    -> end $$
+Query OK, 0 rows affected (0.05 sec)
+
+mysql> delimiter ;
+mysql> insert into  pembayaran (no_kuitansi, tanggal, jumlah, ke, pesanan_id, status_pembayaran)
+    -> values ('KWI001', '2023-03-03', 200000, 1, 1);
+1 rows in set (0.300 sec)
+
+
+2)
+mysql> delimiter $$
+mysql> create procedure kurangi_stok(
+    ->     in p_id int,
+    ->     in p_jumlah int
+    -> )
+    -> begin
+    ->     update produk
+    ->     set stok = stok - p_jumlah
+    ->     where id = p_id;
+    -> end $$
+Query OK, 0 rows affected (0.09 sec)
+
+mysql> delimiter ;
+mysql> call kurangi_stok(1, 2);
+Query OK, 1 row affected (0.10 sec)
+
+
+3)
+mysql> delimiter $$
+mysql> create trigger trig_kurangi_stok
+    -> after insert on pesanan_items
+    -> for each row
+    -> begin
+    ->     call kurangi_stok(NEW.produk_id, NEW.qty);
+    -> end $$
+Query OK, 0 rows affected (0.10 sec)
